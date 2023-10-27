@@ -612,6 +612,10 @@ public class QueryManager extends AlpineQueryManager {
         return getPolicyQueryManager().addPolicyViolationIfNotExist(pv);
     }
 
+    public PolicyViolation clonePolicyViolation(PolicyViolation sourcePolicyViolation, Component destinationComponent){
+        return getPolicyQueryManager().clonePolicyViolation(sourcePolicyViolation, destinationComponent);
+    }
+
     public List<PolicyViolation> getAllPolicyViolations() {
         return getPolicyQueryManager().getAllPolicyViolations();
     }

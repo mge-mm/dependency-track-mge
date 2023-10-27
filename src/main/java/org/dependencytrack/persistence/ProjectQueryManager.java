@@ -39,6 +39,7 @@ import org.dependencytrack.model.Classifier;
 import org.dependencytrack.model.Component;
 import org.dependencytrack.model.ConfigPropertyConstants;
 import org.dependencytrack.model.FindingAttribution;
+import org.dependencytrack.model.PolicyViolation;
 import org.dependencytrack.model.Project;
 import org.dependencytrack.model.ProjectProperty;
 import org.dependencytrack.model.ProjectVersion;
@@ -596,6 +597,12 @@ final class ProjectQueryManager extends QueryManager implements IQueryManager {
     public Project clone(UUID from, String newVersion, boolean includeTags, boolean includeProperties,
                          boolean includeComponents, boolean includeServices, boolean includeAuditHistory,
                          boolean includeACL) {
+        /**
+         * TODO 
+         * implement parameter for clone(... , boolean includePolicyViolations)
+         * maybe set the value always to true or delete if condition in line 720
+         */
+        boolean includePolicyViolations = true; 
         final Project source = getObjectByUuid(Project.class, from, Project.FetchGroup.ALL.name());
         if (source == null) {
             LOGGER.warn("Project with UUID %s was supposed to be cloned, but it does not exist anymore".formatted(from));
@@ -708,6 +715,17 @@ final class ProjectQueryManager extends QueryManager implements IQueryManager {
             List<Team> accessTeams = source.getAccessTeams();
             if (!CollectionUtils.isEmpty(accessTeams)) {
                 project.setAccessTeams(new ArrayList<>(accessTeams));
+            }
+        }
+
+        if(includePolicyViolations){
+            final List<PolicyViolation> sourcePolicyViolations = getAllPolicyViolations(source);
+            if(sourcePolicyViolations != null){
+                for(final PolicyViolation policyViolation: sourcePolicyViolations){
+                    final Component destinationComponent = clonedComponents.get(policyViolation.getComponent().getId());
+                    final PolicyViolation clonedPolicyViolation = clonePolicyViolation(policyViolation, destinationComponent);
+                    persist(clonedPolicyViolation);
+                }
             }
         }
 

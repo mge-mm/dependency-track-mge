@@ -184,6 +184,23 @@ final class PolicyQueryManager extends QueryManager implements IQueryManager {
     }
 
     /**
+     * clones a policy violation
+     * @param sourcePolicyViolation the policy violation to clone
+     * @param destinationComponent the corresponding component
+     */
+    public PolicyViolation clonePolicyViolation(PolicyViolation sourcePolicyViolation, Component destinationComponent){
+            final PolicyViolation policyViolation = new PolicyViolation();
+            policyViolation.setType(sourcePolicyViolation.getType());
+            policyViolation.setComponent(destinationComponent);
+            policyViolation.setPolicyCondition(sourcePolicyViolation.getPolicyCondition());
+            policyViolation.setTimestamp(sourcePolicyViolation.getTimestamp());
+            //policyViolation.setAnalysis(sourcePolicyViolation.getAnalysis()); 
+            //TODO Analysis clone because of bidirectional 1:1 connection
+            policyViolation.setUuid(sourcePolicyViolation.getUuid());
+            return policyViolation;
+    }
+
+    /**
      * Returns a List of all Policy objects.
      * This method if designed NOT to provide paginated results.
      * @return a List of all Policy objects
