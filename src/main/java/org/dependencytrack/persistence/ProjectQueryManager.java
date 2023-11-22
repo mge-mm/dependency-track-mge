@@ -596,7 +596,7 @@ final class ProjectQueryManager extends QueryManager implements IQueryManager {
     @Override
     public Project clone(UUID from, String newVersion, boolean includeTags, boolean includeProperties,
                          boolean includeComponents, boolean includeServices, boolean includeAuditHistory,
-                         boolean includeACL) {
+                         boolean includeACL, boolean includePolicyViolations) {
         final Project source = getObjectByUuid(Project.class, from, Project.FetchGroup.ALL.name());
         if (source == null) {
             LOGGER.warn("Project with UUID %s was supposed to be cloned, but it does not exist anymore".formatted(from));
@@ -713,14 +713,16 @@ final class ProjectQueryManager extends QueryManager implements IQueryManager {
         }
 
      
-        final List<PolicyViolation> sourcePolicyViolations = getAllPolicyViolations(source);
-        if(sourcePolicyViolations != null){
-            for(final PolicyViolation policyViolation: sourcePolicyViolations){
+       if(includeComponents && includePolicyViolations){
+            final List<PolicyViolation> sourcePolicyViolations = getAllPolicyViolations(source);
+            if(sourcePolicyViolations != null){
+                for(final PolicyViolation policyViolation: sourcePolicyViolations){
                 final Component destinationComponent = clonedComponents.get(policyViolation.getComponent().getId());
                 final PolicyViolation clonedPolicyViolation = clonePolicyViolation(policyViolation, destinationComponent);
                 persist(clonedPolicyViolation);
+                }   
             }
-        }
+       }
         
 
         project = getObjectById(Project.class, project.getId());

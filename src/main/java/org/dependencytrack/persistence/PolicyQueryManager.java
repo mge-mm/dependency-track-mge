@@ -369,8 +369,12 @@ final class PolicyQueryManager extends QueryManager implements IQueryManager {
     public ViolationAnalysis cloneViolationAnalysis(Component destinationComponent, PolicyViolation sourcePolicyViolation){
         ViolationAnalysis violationAnalysis = new ViolationAnalysis();
         violationAnalysis.setComponent(destinationComponent);
-        violationAnalysis.setSuppressed(sourcePolicyViolation.getAnalysis().isSuppressed());
-        violationAnalysis.setViolationAnalysisState(sourcePolicyViolation.getAnalysis().getAnalysisState());
+        if(sourcePolicyViolation.getAnalysis() != null){
+            violationAnalysis.setSuppressed(sourcePolicyViolation.getAnalysis().isSuppressed());
+            violationAnalysis.setViolationAnalysisState(sourcePolicyViolation.getAnalysis().getAnalysisState());
+        } else {
+            violationAnalysis.setViolationAnalysisState(ViolationAnalysisState.NOT_SET);
+        }
         return violationAnalysis;
     }
 
@@ -420,7 +424,8 @@ final class PolicyQueryManager extends QueryManager implements IQueryManager {
      */
     public List<ViolationAnalysisComment> cloneViolationAnalysisComments(PolicyViolation sourcePolicyViolation, ViolationAnalysis violationAnalysis){
         List<ViolationAnalysisComment> comments = new ArrayList<ViolationAnalysisComment>();
-         for(ViolationAnalysisComment c : sourcePolicyViolation.getAnalysis().getAnalysisComments()){
+        if(sourcePolicyViolation.getAnalysis() != null){
+            for(ViolationAnalysisComment c : sourcePolicyViolation.getAnalysis().getAnalysisComments()){
                 ViolationAnalysisComment comment = new ViolationAnalysisComment();
                 comment.setViolationAnalysis(violationAnalysis);
                 comment.setComment(c.getComment());
@@ -428,6 +433,8 @@ final class PolicyQueryManager extends QueryManager implements IQueryManager {
                 comment.setTimestamp(c.getTimestamp());
                 comments.add(comment);
             }
+        }
+        
         return comments;
     }
 
