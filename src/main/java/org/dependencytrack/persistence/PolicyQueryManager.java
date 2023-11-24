@@ -195,11 +195,15 @@ final class PolicyQueryManager extends QueryManager implements IQueryManager {
             policyViolation.setComponent(destinationComponent);
             policyViolation.setPolicyCondition(sourcePolicyViolation.getPolicyCondition());
             policyViolation.setTimestamp(sourcePolicyViolation.getTimestamp());
+            policyViolation.setText(sourcePolicyViolation.getText());
+            policyViolation.setType(sourcePolicyViolation.getType());
             //cloning ViolatioAnalysis
             ViolationAnalysis violationAnalysis = cloneViolationAnalysis(destinationComponent, sourcePolicyViolation);
             //cloning ViolationAnalysisComments
             List<ViolationAnalysisComment> comments = cloneViolationAnalysisComments(sourcePolicyViolation, violationAnalysis);
-            violationAnalysis.setAnalysisComments(comments);
+            if(comments != null){
+                violationAnalysis.setAnalysisComments(comments);
+            }
             policyViolation.setAnalysis(violationAnalysis); 
             policyViolation.getAnalysis().setPolicyViolation(policyViolation);
             policyViolation.setUuid(sourcePolicyViolation.getUuid());
@@ -424,7 +428,7 @@ final class PolicyQueryManager extends QueryManager implements IQueryManager {
      */
     public List<ViolationAnalysisComment> cloneViolationAnalysisComments(PolicyViolation sourcePolicyViolation, ViolationAnalysis violationAnalysis){
         List<ViolationAnalysisComment> comments = new ArrayList<ViolationAnalysisComment>();
-        if(sourcePolicyViolation.getAnalysis() != null){
+        if(sourcePolicyViolation.getAnalysis() != null && sourcePolicyViolation.getAnalysis().getAnalysisComments() != null){
             for(ViolationAnalysisComment c : sourcePolicyViolation.getAnalysis().getAnalysisComments()){
                 ViolationAnalysisComment comment = new ViolationAnalysisComment();
                 comment.setViolationAnalysis(violationAnalysis);
