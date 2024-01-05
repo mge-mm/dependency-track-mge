@@ -62,6 +62,7 @@ import org.dependencytrack.model.ProjectProperty;
 import org.dependencytrack.model.Repository;
 import org.dependencytrack.model.RepositoryMetaComponent;
 import org.dependencytrack.model.RepositoryType;
+import org.dependencytrack.model.ScheduledNotificationsInfo;
 import org.dependencytrack.model.ServiceComponent;
 import org.dependencytrack.model.Tag;
 import org.dependencytrack.model.Vex;
@@ -112,6 +113,7 @@ public class QueryManager extends AlpineQueryManager {
     private LicenseQueryManager licenseQueryManager;
     private MetricsQueryManager metricsQueryManager;
     private NotificationQueryManager notificationQueryManager;
+    private ScheduledNotificationQueryManager scheduledNotificationQueryManager;
     private PolicyQueryManager policyQueryManager;
     private ProjectQueryManager projectQueryManager;
     private RepositoryQueryManager repositoryQueryManager;
@@ -307,6 +309,17 @@ public class QueryManager extends AlpineQueryManager {
             notificationQueryManager = (request == null) ? new NotificationQueryManager(getPersistenceManager()) : new NotificationQueryManager(getPersistenceManager(), request);
         }
         return notificationQueryManager;
+    }
+
+    /**
+     * Lazy instantiation of ScheduledNotificationQueryManager.
+     * @return a NotificationQueryManager object
+     */
+    private ScheduledNotificationQueryManager getSchedNotificationQueryManager() {
+        if (scheduledNotificationQueryManager == null) {
+            scheduledNotificationQueryManager = (request == null) ? new ScheduledNotificationQueryManager(getPersistenceManager()) : new ScheduledNotificationQueryManager(getPersistenceManager(), request);
+        }
+        return scheduledNotificationQueryManager;
     }
 
     /**
@@ -1152,6 +1165,30 @@ public class QueryManager extends AlpineQueryManager {
 
     public void deleteNotificationPublisher(NotificationPublisher notificationPublisher) {
         getNotificationQueryManager().deleteNotificationPublisher(notificationPublisher);
+    }
+
+    public PaginatedResult getScheduledNotifications(){
+        return getSchedNotificationQueryManager().getScheduledNotifications();
+    }
+
+    public ScheduledNotificationsInfo createScheduledNotificationInfo(ScheduledNotificationsInfo scheduledNotificationsInfo){
+        return getSchedNotificationQueryManager().createScheduledNotificationInfo(scheduledNotificationsInfo);
+    }
+
+    public ScheduledNotificationsInfo updateScheduledNotificationInfoNextExecution(ScheduledNotificationsInfo scheduledNotificationsInfo){
+        return getSchedNotificationQueryManager().updateScheduledNotificationInfoNextExecution(scheduledNotificationsInfo);
+    }
+
+    public List<Vulnerability> getNewVulnerabilitiesSinceTimestamp(Date date, int id){
+        return getSchedNotificationQueryManager().getNewVulnerabilitiesSinceTimestamp(date, id);
+    }
+
+    public List<PolicyViolation> getNewPolicyViolationsSinceTimestamp(Date date){
+        return getSchedNotificationQueryManager().getNewPolicyViolationsSinceTimestamp(date);
+    }
+
+    public ScheduledNotificationsInfo getScheduledNotificationsInfoById(long id){
+        return getSchedNotificationQueryManager().getScheduledNotificationsInfoById(id);
     }
 
     public void removeProjectFromNotificationRules(final Project project) {

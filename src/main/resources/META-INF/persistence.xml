@@ -44,6 +44,7 @@
         <class>org.dependencytrack.model.Repository</class>
         <class>org.dependencytrack.model.RepositoryMetaComponent</class>
         <class>org.dependencytrack.model.ServiceComponent</class>
+        <class>org.dependencytrack.model.ScheduledNotificationsInfo</class>
         <class>org.dependencytrack.model.Tag</class>
         <class>org.dependencytrack.model.Vex</class>
         <class>org.dependencytrack.model.ViolationAnalysis</class>

@@ -1,0 +1,51 @@
+
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Automated Dependency-Track Email</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h1 {
+      color: #3498db;
+    }
+    p {
+      margin-bottom: 20px;
+    }
+    .footer {
+      margin-top: 30px;
+      padding-top: 10px;
+      border-top: 1px solid #ccc;
+      text-align: center;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>New Vulnerabilities detected:</h1>
+     <table>
+        {% for vulnerability in vulnerabilities %}
+        <tr>
+            <th> {{ vulnerability.vulnId }} </th>
+            <th> {{ vulnerability.severity }} </th>
+            <th> {{ vulnerability.source }} </th>
+        </tr>
+        {% endfor %}
+    </table> 
+
+    <div class="footer">
+      <p>Scheduled Notification</p>
+    </div>
+  </div>
+</body>
+</html>

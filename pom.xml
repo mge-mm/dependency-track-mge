@@ -374,6 +374,11 @@
             <artifactId>github-api</artifactId>
             <version>${lib.org-kohsuke-github-api.version}</version>
         </dependency>
+         <dependency>
+            <groupId>com.asahaf.javacron</groupId>
+            <artifactId>javacron</artifactId>
+            <version>1.4.0</version>
+        </dependency>
 
         <!-- Test Dependencies -->
         <dependency>
