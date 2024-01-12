@@ -31,6 +31,7 @@ import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.dependencytrack.model.NotificationPublisher;
+import org.dependencytrack.model.PolicyViolation;
 //import org.dependencytrack.model.PolicyViolation;
 import org.dependencytrack.model.ScheduledNotificationsInfo;
 import org.dependencytrack.model.Vulnerability;
@@ -80,7 +81,7 @@ public class ScheduledNotificationSenderTask implements Runnable {
         try (QueryManager qm = new QueryManager()) {
             scheduledNotificationsInfo = qm.getScheduledNotificationsInfoById(scheduledNotificationsInfo.getid());
             if (scheduledNotificationsInfo == null) {
-                System.out.println("thread running");
+                System.out.println("shutdown ScheduledExecutor service");
                 service.shutdown();
             } else {
                 if (scheduledNotificationsInfo.getLastExecution().equals(scheduledNotificationsInfo.getCreated())) {
@@ -89,7 +90,7 @@ public class ScheduledNotificationSenderTask implements Runnable {
                     SimpleDateFormat dateFormatter = new SimpleDateFormat("y-MM-dd HH:mm:ss");
                     Date dummyDateForTesting = dateFormatter.parse("2023-12-30 00:00:00");
                     newVulnerabilities = qm.getNewVulnerabilitiesSinceTimestamp(dummyDateForTesting, 1 /*scheduledNotificationsInfo.getLastExecution()*/);
-                    //List<PolicyViolation> newPolicyViolations = qm.getNewPolicyViolationsSinceTimestamp(scheduledNotificationsInfo.getLastExecution());
+                    List<PolicyViolation> newPolicyViolations = qm.getNewPolicyViolationsSinceTimestamp(dummyDateForTesting, 1 /*scheduledNotificationsInfo.getLastExecution()*/);
 
                     NotificationPublisher notificationPublisher = qm.getNotificationPublisher("Scheduled Email");
 
@@ -106,6 +107,7 @@ public class ScheduledNotificationSenderTask implements Runnable {
                     final Map<String, Object> context = new HashMap<>();
                     context.put("lenght", newVulnerabilities.size());
                     context.put("vulnerabilities", newVulnerabilities);
+                    context.put("policyviolations", newPolicyViolations);
                     final Writer writer = new StringWriter();
                     template.evaluate(writer, context);
                     content = writer.toString();

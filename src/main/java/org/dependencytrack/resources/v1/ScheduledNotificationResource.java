@@ -21,9 +21,11 @@ package org.dependencytrack.resources.v1;
 
 import javax.validation.Validator;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -37,6 +39,7 @@ import alpine.server.auth.PermissionRequired;
 import alpine.server.resources.AlpineResource;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.Authorization;
@@ -67,8 +70,6 @@ public class ScheduledNotificationResource extends AlpineResource {
             return Response.ok(result.getObjects()).header(TOTAL_COUNT_HEADER, result.getTotal()).build();
         }
     }
-
-
 
 
     @PUT
@@ -102,4 +103,35 @@ public class ScheduledNotificationResource extends AlpineResource {
             }
         }
     }
+
+
+    @DELETE
+    @Path("/delete")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(
+            value = "deletes a scheduled notification info entry",
+            response = ScheduledNotificationsInfo.class,
+            code = 201
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 401, message = "Unauthorized"),
+            @ApiResponse(code = 404, message = "Not found")
+    })
+
+    public Response deleteScheduledNotification(
+        @ApiParam(value = "The ID of the scheduled notification info to delete", required = true)
+        @PathParam("id") long id){
+            try(QueryManager qm = new QueryManager(getAlpineRequest())) {
+                final ScheduledNotificationsInfo result = qm.getObjectById(ScheduledNotificationsInfo.class, id);
+            if(result != null){
+                qm.deleteScheduledNotificationInfo(qm.getObjectById(ScheduledNotificationsInfo.class, id));
+                return Response.status(Response.Status.NO_CONTENT).entity(result).build();
+            }else{
+                return Response.status(Response.Status.NOT_FOUND).entity("The scheduled notification could not be found.").build();
+            }
+            }
+
+    }
+
 }

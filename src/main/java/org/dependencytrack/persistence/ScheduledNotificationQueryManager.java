@@ -109,7 +109,7 @@ public class ScheduledNotificationQueryManager extends QueryManager implements I
     }
 
     @SuppressWarnings("unchecked")
-    public List<Vulnerability> getNewVulnerabilitiesSinceTimestamp(Date lastExecution, int id){
+    public List<Vulnerability> getNewVulnerabilitiesSinceTimestamp(Date lastExecution, long id){
         final Query<Object[]> query = pm.newQuery(JDOQuery.SQL_QUERY_LANGUAGE,
                 "SELECT " + 
                 "VULNERABILITY.ID, " +
@@ -128,14 +128,26 @@ public class ScheduledNotificationQueryManager extends QueryManager implements I
     }
 
     @SuppressWarnings("unchecked")
-    public List<PolicyViolation> getNewPolicyViolationsSinceTimestamp(Date lastExecution){
-        final Query<PolicyViolation> query = pm.newQuery(PolicyViolation.class);
-        Date date = new Date();
-        String filter = "timestamp >= lastExecution && timestamp <= date";
-        query.setFilter(filter);
-        query.declareParameters("java.util.Date lastExecution, java.util.Date date");
-        final List<PolicyViolation> policyViolations = (List<PolicyViolation>)query.execute(lastExecution, date);
+    public List<PolicyViolation> getNewPolicyViolationsSinceTimestamp(Date lastExecution, long id){
+        final Query<Object> query = pm.newQuery(JDOQuery.SQL_QUERY_LANGUAGE,
+        "SELECT " +
+        "POLICYVIOLATION.ID " +
+        "FROM POLICYVIOLATION " +
+        "WHERE (POLICYVIOLATION.TIMESTAMP BETWEEN ? AND ?) AND (POLICYVIOLATION.PROJECT_ID = ?)"
+        );
+        final List<Object> totalList = (List<Object>)query.execute(lastExecution, new Date(), id);
+        List<PolicyViolation> policyViolations = new ArrayList<>();
+        for(Object o : totalList){
+            PolicyViolation policyViolation = getObjectById(PolicyViolation.class, o);
+            policyViolations.add(policyViolation);
+        }
         return policyViolations;
+    }
+
+    public void deleteScheduledNotificationInfo(final ScheduledNotificationsInfo scheduledNotificationsInfo) {
+        final Query<ScheduledNotificationsInfo> query = pm.newQuery(ScheduledNotificationsInfo.class, "id == :id");
+        query.deletePersistentAll(scheduledNotificationsInfo.getid());
+        delete(scheduledNotificationsInfo);
     }
 
     private Date calculateNextExecution(Date baseDate , String cronString){

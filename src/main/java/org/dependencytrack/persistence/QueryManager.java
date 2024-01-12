@@ -84,6 +84,8 @@ import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 import javax.jdo.Transaction;
 import javax.json.JsonObject;
+import javax.ws.rs.core.Response;
+
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Date;
@@ -315,7 +317,7 @@ public class QueryManager extends AlpineQueryManager {
      * Lazy instantiation of ScheduledNotificationQueryManager.
      * @return a NotificationQueryManager object
      */
-    private ScheduledNotificationQueryManager getSchedNotificationQueryManager() {
+    private ScheduledNotificationQueryManager getScheduledNotificationQueryManager() {
         if (scheduledNotificationQueryManager == null) {
             scheduledNotificationQueryManager = (request == null) ? new ScheduledNotificationQueryManager(getPersistenceManager()) : new ScheduledNotificationQueryManager(getPersistenceManager(), request);
         }
@@ -1168,27 +1170,31 @@ public class QueryManager extends AlpineQueryManager {
     }
 
     public PaginatedResult getScheduledNotifications(){
-        return getSchedNotificationQueryManager().getScheduledNotifications();
+        return getScheduledNotificationQueryManager().getScheduledNotifications();
     }
 
     public ScheduledNotificationsInfo createScheduledNotificationInfo(ScheduledNotificationsInfo scheduledNotificationsInfo){
-        return getSchedNotificationQueryManager().createScheduledNotificationInfo(scheduledNotificationsInfo);
+        return getScheduledNotificationQueryManager().createScheduledNotificationInfo(scheduledNotificationsInfo);
     }
 
     public ScheduledNotificationsInfo updateScheduledNotificationInfoNextExecution(ScheduledNotificationsInfo scheduledNotificationsInfo){
-        return getSchedNotificationQueryManager().updateScheduledNotificationInfoNextExecution(scheduledNotificationsInfo);
+        return getScheduledNotificationQueryManager().updateScheduledNotificationInfoNextExecution(scheduledNotificationsInfo);
     }
 
-    public List<Vulnerability> getNewVulnerabilitiesSinceTimestamp(Date date, int id){
-        return getSchedNotificationQueryManager().getNewVulnerabilitiesSinceTimestamp(date, id);
+    public List<Vulnerability> getNewVulnerabilitiesSinceTimestamp(Date date, long id){
+        return getScheduledNotificationQueryManager().getNewVulnerabilitiesSinceTimestamp(date, id);
     }
 
-    public List<PolicyViolation> getNewPolicyViolationsSinceTimestamp(Date date){
-        return getSchedNotificationQueryManager().getNewPolicyViolationsSinceTimestamp(date);
+    public List<PolicyViolation> getNewPolicyViolationsSinceTimestamp(Date date, long id){
+        return getScheduledNotificationQueryManager().getNewPolicyViolationsSinceTimestamp(date, id);
     }
 
     public ScheduledNotificationsInfo getScheduledNotificationsInfoById(long id){
-        return getSchedNotificationQueryManager().getScheduledNotificationsInfoById(id);
+        return getScheduledNotificationQueryManager().getScheduledNotificationsInfoById(id);
+    }
+
+    public void deleteScheduledNotificationInfo(ScheduledNotificationsInfo scheduledNotificationsInfo){
+        getScheduledNotificationQueryManager().deleteScheduledNotificationInfo(scheduledNotificationsInfo);
     }
 
     public void removeProjectFromNotificationRules(final Project project) {

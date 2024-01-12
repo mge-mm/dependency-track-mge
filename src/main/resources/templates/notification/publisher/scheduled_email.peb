@@ -43,6 +43,17 @@
         {% endfor %}
     </table> 
 
+    <h1>New Policy Violations detected:</h1>
+     <table>
+        {% for policyViolation in policyviolations %}
+        <tr>
+            <th> {{ policyViolation.type }} </th>
+            <th> {{ policyViolation.timestamp }} </th>
+            <th> {{ policyViolation.uuid }} </th>
+        </tr>
+        {% endfor %}
+    </table> 
+
     <div class="footer">
       <p>Scheduled Notification</p>
     </div>
