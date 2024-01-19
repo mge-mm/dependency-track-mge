@@ -58,7 +58,14 @@ public class ScheduledNotificationQueryManager extends QueryManager implements I
         super(pm, request);
     }
 
-    public PaginatedResult getScheduledNotifications() {
+    @SuppressWarnings("unchecked")
+    public List<ScheduledNotificationsInfo> getScheduledNotifications() {
+        final Query<ScheduledNotificationsInfo> query = pm.newQuery(ScheduledNotificationsInfo.class);
+        final List<ScheduledNotificationsInfo> scheduledNotificationsInfos = (List<ScheduledNotificationsInfo>)query.execute();
+        return scheduledNotificationsInfos;
+    }
+    
+    public PaginatedResult getScheduledNotificationsPaginatedResult() {
         final PaginatedResult result;
         final Query<ScheduledNotificationsInfo> query = pm.newQuery(ScheduledNotificationsInfo.class);
         result = execute(query);
@@ -80,6 +87,18 @@ public class ScheduledNotificationQueryManager extends QueryManager implements I
         scheduledNotificationInfo.setCronString(transientScheduledNotificationsInfo.getCronString());
         scheduledNotificationInfo.setLastExecution(new Date());
         scheduledNotificationInfo.setNextExectution(calculateNextExecution(transientScheduledNotificationsInfo.getNextExecution(), transientScheduledNotificationsInfo.getCronString()));
+        final ScheduledNotificationsInfo result = persist(scheduledNotificationInfo);
+        return result;
+    }
+
+    public ScheduledNotificationsInfo updateSCScheduledNotificationsInfo(ScheduledNotificationsInfo transientScheduledNotificationsInfo){
+        final ScheduledNotificationsInfo scheduledNotificationInfo = getObjectById(ScheduledNotificationsInfo.class, transientScheduledNotificationsInfo.getid());
+        scheduledNotificationInfo.setCreated(transientScheduledNotificationsInfo.getCreated());
+        scheduledNotificationInfo.setCronString(transientScheduledNotificationsInfo.getCronString());
+        scheduledNotificationInfo.setDestinations(transientScheduledNotificationsInfo.getDestinations());
+        scheduledNotificationInfo.setLastExecution(transientScheduledNotificationsInfo.getLastExecution());
+        scheduledNotificationInfo.setNextExectution(transientScheduledNotificationsInfo.getNextExecution());
+        scheduledNotificationInfo.setProjectId(transientScheduledNotificationsInfo.getProjectId());
         final ScheduledNotificationsInfo result = persist(scheduledNotificationInfo);
         return result;
     }

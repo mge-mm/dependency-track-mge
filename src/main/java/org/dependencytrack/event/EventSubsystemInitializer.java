@@ -24,6 +24,9 @@ import alpine.event.framework.EventService;
 import alpine.event.framework.SingleThreadedEventService;
 import alpine.server.tasks.LdapSyncTask;
 import org.dependencytrack.RequirementsVerifier;
+import org.dependencytrack.model.ScheduledNotificationsInfo;
+import org.dependencytrack.notification.ScheduledNotification;
+import org.dependencytrack.persistence.QueryManager;
 import org.dependencytrack.tasks.BomUploadProcessingTask;
 import org.dependencytrack.tasks.CallbackTask;
 import org.dependencytrack.tasks.ClearComponentAnalysisCacheTask;
@@ -53,6 +56,8 @@ import org.dependencytrack.tasks.scanners.InternalAnalysisTask;
 import org.dependencytrack.tasks.scanners.OssIndexAnalysisTask;
 import org.dependencytrack.tasks.scanners.SnykAnalysisTask;
 import org.dependencytrack.tasks.scanners.VulnDbAnalysisTask;
+
+import java.util.List;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -116,6 +121,14 @@ public class EventSubsystemInitializer implements ServletContextListener {
         EVENT_SERVICE_ST.subscribe(IndexEvent.class, IndexTask.class);
 
         TaskScheduler.getInstance();
+
+        try(QueryManager qm = new QueryManager()){
+            List<ScheduledNotificationsInfo> scheduledNotificationsInfos = qm.getScheduledNotifications();
+            ScheduledNotification scheduledNotification = new ScheduledNotification();
+            for (ScheduledNotificationsInfo scheduledNotificationsInfo : scheduledNotificationsInfos) {
+                scheduledNotification.sendScheduledNotification(scheduledNotificationsInfo);
+            }
+        }
     }
 
     /**

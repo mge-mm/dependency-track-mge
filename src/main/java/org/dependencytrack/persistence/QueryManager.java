@@ -84,7 +84,6 @@ import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 import javax.jdo.Transaction;
 import javax.json.JsonObject;
-import javax.ws.rs.core.Response;
 
 import java.security.Principal;
 import java.util.ArrayList;
@@ -1169,8 +1168,12 @@ public class QueryManager extends AlpineQueryManager {
         getNotificationQueryManager().deleteNotificationPublisher(notificationPublisher);
     }
 
-    public PaginatedResult getScheduledNotifications(){
+    public List<ScheduledNotificationsInfo> getScheduledNotifications(){
         return getScheduledNotificationQueryManager().getScheduledNotifications();
+    }
+
+    public PaginatedResult getScheduledNotificationsPaginatedResult() {
+        return getScheduledNotificationQueryManager().getScheduledNotificationsPaginatedResult();
     }
 
     public ScheduledNotificationsInfo createScheduledNotificationInfo(ScheduledNotificationsInfo scheduledNotificationsInfo){
@@ -1179,6 +1182,10 @@ public class QueryManager extends AlpineQueryManager {
 
     public ScheduledNotificationsInfo updateScheduledNotificationInfoNextExecution(ScheduledNotificationsInfo scheduledNotificationsInfo){
         return getScheduledNotificationQueryManager().updateScheduledNotificationInfoNextExecution(scheduledNotificationsInfo);
+    }
+
+    public ScheduledNotificationsInfo updateScheduledNotificationsInfo(ScheduledNotificationsInfo scheduledNotificationsInfo){
+        return getScheduledNotificationQueryManager().updateScheduledNotificationsInfo(scheduledNotificationsInfo);
     }
 
     public List<Vulnerability> getNewVulnerabilitiesSinceTimestamp(Date date, long id){

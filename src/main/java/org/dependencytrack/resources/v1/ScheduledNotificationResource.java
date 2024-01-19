@@ -23,6 +23,7 @@ import javax.validation.Validator;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -66,7 +67,7 @@ public class ScheduledNotificationResource extends AlpineResource {
     @PermissionRequired(Permissions.Constants.VIEW_PORTFOLIO)
     public Response getAllScheduledNotifications(){
         try (QueryManager qm = new QueryManager(getAlpineRequest())){
-            final PaginatedResult result = qm.getScheduledNotifications();
+            final PaginatedResult result = qm.getScheduledNotificationsPaginatedResult();
             return Response.ok(result.getObjects()).header(TOTAL_COUNT_HEADER, result.getTotal()).build();
         }
     }
@@ -85,7 +86,6 @@ public class ScheduledNotificationResource extends AlpineResource {
             @ApiResponse(code = 401, message = "Unauthorized"),
             @ApiResponse(code = 404, message = "Not found")
     })
-    //@PermissionRequired(Permissions.Constants.PORTFOLIO_MANAGEMENT)
     public Response createScheduledNotification(ScheduledNotificationsInfo scheduledNotificationsInfo){
         final Validator validator = super.getValidator();
         failOnValidationError(validator.validateProperty(scheduledNotificationsInfo, "created"));
@@ -133,5 +133,39 @@ public class ScheduledNotificationResource extends AlpineResource {
             }
 
     }
+
+
+
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(
+            value = "Updates a scheduled notification",
+            response = ScheduledNotificationsInfo.class
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 401, message = "Unauthorized"),
+            @ApiResponse(code = 404, message = "The UUID of the project could not be found"),
+            @ApiResponse(code = 409, message = "- An inactive Parent cannot be selected as parent\n- Project cannot be set to inactive if active children are present\n- A project with the specified name already exists\n- A project cannot select itself as a parent")
+    })
+    public Response updateScheduledNotification(ScheduledNotificationsInfo scheduledNotificationsInfo){
+        final Validator validator = super.getValidator();
+        failOnValidationError(validator.validateProperty(scheduledNotificationsInfo, "created"));
+        failOnValidationError(validator.validateProperty(scheduledNotificationsInfo, "cronString"));
+        failOnValidationError(validator.validateProperty(scheduledNotificationsInfo, "nextExecution"));
+        failOnValidationError(validator.validateProperty(scheduledNotificationsInfo, "lastExecution"));
+        failOnValidationError(validator.validateProperty(scheduledNotificationsInfo, "destinations"));
+        failOnValidationError(validator.validateProperty(scheduledNotificationsInfo, "projectId"));
+        try (QueryManager qm = new QueryManager(getAlpineRequest())){
+            final ScheduledNotificationsInfo result = qm.updateScheduledNotificationsInfo(scheduledNotificationsInfo);
+            if(result != null){
+                return Response.ok(result).build();
+            }else{
+                return Response.status(Response.Status.NOT_FOUND).entity("The scheduled notification could not be found.").build();
+            }
+        }
+
+    }
+
 
 }

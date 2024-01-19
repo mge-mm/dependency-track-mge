@@ -32,11 +32,11 @@ import javax.json.JsonObject;
 
 import org.dependencytrack.model.NotificationPublisher;
 import org.dependencytrack.model.PolicyViolation;
-//import org.dependencytrack.model.PolicyViolation;
 import org.dependencytrack.model.ScheduledNotificationsInfo;
 import org.dependencytrack.model.Vulnerability;
 import org.dependencytrack.persistence.QueryManager;
 
+import alpine.common.logging.Logger;
 import alpine.security.crypto.DataEncryption;
 import alpine.server.mail.SendMail;
 import alpine.server.mail.SendMailException;
@@ -57,6 +57,7 @@ import static org.dependencytrack.notification.publisher.Publisher.CONFIG_TEMPLA
 public class ScheduledNotificationSenderTask implements Runnable {
     private ScheduledNotificationsInfo scheduledNotificationsInfo;
     private ScheduledExecutorService service;
+    private static final Logger LOGGER = Logger.getLogger(ScheduledNotificationSenderTask.class);
 
     public ScheduledNotificationSenderTask(ScheduledNotificationsInfo scheduledNotificationsInfo,
             ScheduledExecutorService service) {
@@ -66,7 +67,7 @@ public class ScheduledNotificationSenderTask implements Runnable {
 
     @Override
     public void run() {
-        String content = "SN:  ";
+        String content = "";
         final String mimeType;
         final boolean smtpEnabled;
         final String smtpFrom;
@@ -77,23 +78,27 @@ public class ScheduledNotificationSenderTask implements Runnable {
         final boolean smtpSslTls;
         final boolean smtpTrustCert;
         List<Vulnerability> newVulnerabilities;
+        List<PolicyViolation> newPolicyViolations;
 
         try (QueryManager qm = new QueryManager()) {
             scheduledNotificationsInfo = qm.getScheduledNotificationsInfoById(scheduledNotificationsInfo.getid());
             if (scheduledNotificationsInfo == null) {
-                System.out.println("shutdown ScheduledExecutor service");
+                LOGGER.info("shutdown ExecutorService for Scheduled notification " + scheduledNotificationsInfo.getid() );
                 service.shutdown();
             } else {
                 if (scheduledNotificationsInfo.getLastExecution().equals(scheduledNotificationsInfo.getCreated())) {
-                    System.out.println("schedulednotification just created. No Information to show");
+                    LOGGER.info("schedulednotification just created. No Information to show");
                 } else {
                     SimpleDateFormat dateFormatter = new SimpleDateFormat("y-MM-dd HH:mm:ss");
+                    /**
+                     * TODO
+                     *  values in the following lines are for testing ONLY to get more data
+                     *  replace with commented code
+                     */
                     Date dummyDateForTesting = dateFormatter.parse("2023-12-30 00:00:00");
-                    newVulnerabilities = qm.getNewVulnerabilitiesSinceTimestamp(dummyDateForTesting, 1 /*scheduledNotificationsInfo.getLastExecution()*/);
-                    List<PolicyViolation> newPolicyViolations = qm.getNewPolicyViolationsSinceTimestamp(dummyDateForTesting, 1 /*scheduledNotificationsInfo.getLastExecution()*/);
-
+                    newVulnerabilities = qm.getNewVulnerabilitiesSinceTimestamp(dummyDateForTesting, 1 /*scheduledNotificationsInfo.getLastExecution() , scheduledNotificationsInfo.getProjectId() */);
+                    newPolicyViolations = qm.getNewPolicyViolationsSinceTimestamp(dummyDateForTesting, 1 /*scheduledNotificationsInfo.getLastExecution(), scheduledNotificationsInfo.getProjectId()*/);
                     NotificationPublisher notificationPublisher = qm.getNotificationPublisher("Scheduled Email");
-
                     JsonObject notificationPublisherConfig = Json.createObjectBuilder()
                             .add(CONFIG_TEMPLATE_MIME_TYPE_KEY, notificationPublisher.getTemplateMimeType())
                             .add(CONFIG_TEMPLATE_KEY, notificationPublisher.getTemplate())
@@ -111,7 +116,6 @@ public class ScheduledNotificationSenderTask implements Runnable {
                     final Writer writer = new StringWriter();
                     template.evaluate(writer, context);
                     content = writer.toString();
-                    System.out.println(content);
 
                     smtpEnabled = qm.isEnabled(EMAIL_SMTP_ENABLED);
                     if (!smtpEnabled) {
@@ -150,15 +154,15 @@ public class ScheduledNotificationSenderTask implements Runnable {
                                 .trustCert(smtpTrustCert);
                         sendMail.send();
                     } catch (SendMailException | RuntimeException e) {
-                        System.out.println("Failed to send notification email via %s:%d (%s)");
+                        LOGGER.debug("Failed to send notification email ");
+                        LOGGER.debug(e.getMessage());
                     }
                 }
                 qm.updateScheduledNotificationInfoNextExecution(scheduledNotificationsInfo);
-                // method in QM diff name
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.debug(e.getMessage());
         }
 
     }
